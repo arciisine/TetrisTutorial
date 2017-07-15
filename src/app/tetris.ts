@@ -78,7 +78,7 @@ function onInput(e: KeyboardEvent) {
 
 
 document.body.addEventListener('keydown', onInput)
-onInput({});
+onInput({} as any);
 
 setInterval(function drop() {
   piece.y += 1;
