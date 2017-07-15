@@ -2,6 +2,7 @@ import { PIECES, PieceType, PieceColor, PieceTemplate } from './pieces';
 import { KEY_CODES } from './key-codes';
 import { getCanvas } from './canvas';
 import { BLOCK_SIZE, LINE_WIDTH, LINE_WIDTH_HALF, BLOCKS_WIDE, BLOCKS_HIGH } from './dimensions';
+import { initMusic } from './audio';
 
 interface Piece extends PieceTemplate {
   rotation: number;
@@ -16,6 +17,8 @@ interface Direction {
 
 const canvas = getCanvas();
 const context = canvas.getContext('2d');
+const music = initMusic();
+music.playbackRate = .5;
 
 function toRGB(color: PieceColor) {
   return `rgba(${color.red},${color.green},${color.blue},${color.alpha})`;
@@ -108,7 +111,14 @@ function onInput(e: KeyboardEvent) {
     case KEY_CODES.UP: movePiece(piece, { y: -1 }); break;
     case KEY_CODES.DOWN: movePiece(piece, { y: 1 }); break;
     case KEY_CODES.SPACE: piece.rotation += 1; break;
-    case KEY_CODES.ENTER: paused = !paused; break;
+    case KEY_CODES.ENTER:
+      paused = !paused;
+      if (paused) {
+        music.pause();
+      } else {
+        music.play();
+      }
+      break;
     default:
       if (KEY_CODES[e.keyCode]) {
         piece = getPiece(KEY_CODES[e.keyCode]);
@@ -133,3 +143,4 @@ setInterval(function () {
 }, 1000);
 
 window.requestAnimationFrame(drawScreen);
+music.play();
