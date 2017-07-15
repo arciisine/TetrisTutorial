@@ -74,7 +74,17 @@ export const PIECES = {
       '    ' +
       '    ' +
       'XXXX' +
-      '    '
+      '    ',
+
+      ' X  ' +
+      ' X  ' +
+      ' X  ' +
+      ' X  ',
+
+      '    ' +
+      'XXXX' +
+      '    ' +
+      '    ',
     ]
   },
   O: {
@@ -96,6 +106,14 @@ export const PIECES = {
       ' X ' +
       'XX ' +
       'X  ',
+
+      'XX ' +
+      ' XX' +
+      '   ',
+
+      '  X' +
+      ' XX' +
+      ' X ',
     ]
   },
   Z: {
@@ -108,20 +126,15 @@ export const PIECES = {
 
       ' X ' +
       ' XX' +
-      '  X'
-    ]
-  },
-  X: {
-    color: 'brown',
-    size: 3,
-    frames: [
-      'X X' +
-      ' X ' +
-      'X X',
+      '  X',
 
-      ' X ' +
-      'XXX' +
-      ' X '
+      ' XX' +
+      'XX ' +
+      '   ',
+
+      'X  ' +
+      'XX ' +
+      ' X ',
     ]
   }
 }

@@ -1,7 +1,7 @@
 import { PIECES, PieceType } from './pieces';
 import { KEY_CODES } from './key-codes';
 import { getCanvas } from './canvas';
-import { BLOCK_SIZE, LINE_WIDTH, LINE_WIDTH_HALF } from './dimensions';
+import { BLOCK_SIZE, LINE_WIDTH, LINE_WIDTH_HALF, BLOCKS_WIDE, BLOCKS_HIGH } from './dimensions';
 
 interface Piece {
   shape: PieceType;
@@ -10,9 +10,14 @@ interface Piece {
   y: number;
 }
 
+interface Direction {
+  x?: number;
+  y?: number;
+}
+
 const canvas = getCanvas();
 const context = canvas.getContext('2d');
-const piece: Piece = {
+let piece: Piece = {
   shape: 'T',
   rotation: 0,
   x: 5,
@@ -54,6 +59,24 @@ function drawPiece(piece: Piece) {
   }
 }
 
+function movePiece(piece: Piece, direction: Direction) {
+  if (direction.x !== undefined) {
+    piece.x += direction.x;
+    if (piece.x < 0) {
+      piece.x = 0;
+    } else if (piece.x >= BLOCKS_WIDE) {
+      piece.x = BLOCKS_WIDE - 1;
+    }
+  }
+  if (direction.y !== undefined) {
+    piece.y += direction.y;
+    if (piece.y < 0) {
+      piece.y = 0;
+    } else if (piece.y >= BLOCKS_HIGH) {
+      piece.y = BLOCKS_HIGH - 1;
+    }
+  }
+}
 
 function clearScreen() {
   context.fillStyle = '#000';
@@ -62,28 +85,28 @@ function clearScreen() {
 
 function onInput(e: KeyboardEvent) {
   switch (e.keyCode) {
-    case KEY_CODES.LEFT: piece.x -= 1; break;
-    case KEY_CODES.RIGHT: piece.x += 1; break;
-    case KEY_CODES.UP: piece.y -= 1; break;
-    case KEY_CODES.DOWN: piece.y += 1; break;
+    case KEY_CODES.LEFT: movePiece(piece, { x: -1 }); break;
+    case KEY_CODES.RIGHT: movePiece(piece, { x: 1 }); break;
+    case KEY_CODES.UP: movePiece(piece, { y: -1 }); break;
+    case KEY_CODES.DOWN: movePiece(piece, { y: 1 }); break;
     case KEY_CODES.SPACE: piece.rotation += 1; break;
     default:
       if (KEY_CODES[e.keyCode]) {
         piece.shape = KEY_CODES[e.keyCode];
       }
   }
-  clearScreen();
-  drawPiece(piece);
 }
 
-
-document.body.addEventListener('keydown', onInput)
-onInput({} as any);
-
-setInterval(function drop() {
-  piece.y += 1;
+function drawScreen() {
   clearScreen();
   drawPiece(piece);
+  window.requestAnimationFrame(drawScreen);
+}
+
+document.body.addEventListener('keydown', onInput)
+
+setInterval(function () {
+  movePiece(piece, { y: 1 })
 }, 1000);
 
-
+window.requestAnimationFrame(drawScreen);
