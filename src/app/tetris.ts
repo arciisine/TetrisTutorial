@@ -1,10 +1,9 @@
-import { PIECES, PieceType } from './pieces';
+import { PIECES, PieceType, PieceColor, PieceTemplate } from './pieces';
 import { KEY_CODES } from './key-codes';
 import { getCanvas } from './canvas';
 import { BLOCK_SIZE, LINE_WIDTH, LINE_WIDTH_HALF, BLOCKS_WIDE, BLOCKS_HIGH } from './dimensions';
 
-interface Piece {
-  shape: PieceType;
+interface Piece extends PieceTemplate {
   rotation: number;
   x: number;
   y: number;
@@ -17,24 +16,21 @@ interface Direction {
 
 const canvas = getCanvas();
 const context = canvas.getContext('2d');
-let piece: Piece = {
-  shape: 'T',
-  rotation: 0,
-  x: 5,
-  y: 0
+
+function toRGB(color: PieceColor) {
+  return `rgba(${color.red},${color.green},${color.blue},${color.alpha})`;
 }
 
 function drawPiece(piece: Piece) {
-  const pieceTemplate = PIECES[piece.shape];
-  const frames = pieceTemplate.frames;
+  const frames = piece.frames;
   const frame = frames[piece.rotation % frames.length];
-  const size = pieceTemplate.size;
+  const size = piece.size;
 
   const px = piece.x;
   const py = piece.y;
 
-  context.fillStyle = pieceTemplate.color;
-  context.strokeStyle = 'pink';
+  context.fillStyle = toRGB(piece.color);
+  context.strokeStyle = toRGB(piece.borderColor);
   context.lineWidth = LINE_WIDTH;
 
   for (let x = 0, c = 0; x < size; x++) {
@@ -57,6 +53,10 @@ function drawPiece(piece: Piece) {
       }
     }
   }
+}
+
+function checkBoundary(piece: Piece) {
+
 }
 
 function movePiece(piece: Piece, direction: Direction) {
@@ -83,6 +83,24 @@ function clearScreen() {
   context.fillRect(0, 0, canvas.width, canvas.height);
 }
 
+
+let paused = false;
+
+function getPiece(shape: PieceType) {
+  let tpl = PIECES[shape];
+  let piece: Partial<Piece> = {};
+  piece.x = 0;
+  piece.y = 0;
+  piece.rotation = 0;
+  piece.frames = tpl.frames;
+  piece.size = tpl.size;
+  piece.color = { ...tpl.color };
+  piece.borderColor = { ...tpl.borderColor };
+  return piece as Piece;
+}
+
+let piece = getPiece('T');
+
 function onInput(e: KeyboardEvent) {
   switch (e.keyCode) {
     case KEY_CODES.LEFT: movePiece(piece, { x: -1 }); break;
@@ -90,9 +108,10 @@ function onInput(e: KeyboardEvent) {
     case KEY_CODES.UP: movePiece(piece, { y: -1 }); break;
     case KEY_CODES.DOWN: movePiece(piece, { y: 1 }); break;
     case KEY_CODES.SPACE: piece.rotation += 1; break;
+    case KEY_CODES.ENTER: paused = !paused; break;
     default:
       if (KEY_CODES[e.keyCode]) {
-        piece.shape = KEY_CODES[e.keyCode];
+        piece = getPiece(KEY_CODES[e.keyCode]);
       }
   }
 }
@@ -100,13 +119,17 @@ function onInput(e: KeyboardEvent) {
 function drawScreen() {
   clearScreen();
   drawPiece(piece);
+  piece.color.alpha = (piece.color.alpha + .001) % 1;
+  piece.borderColor.alpha = (piece.borderColor.alpha + .001) % 1;
   window.requestAnimationFrame(drawScreen);
 }
 
 document.body.addEventListener('keydown', onInput)
 
 setInterval(function () {
-  movePiece(piece, { y: 1 })
+  if (!paused) {
+    movePiece(piece, { y: 1 })
+  }
 }, 1000);
 
 window.requestAnimationFrame(drawScreen);

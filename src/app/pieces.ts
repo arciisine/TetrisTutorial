@@ -1,6 +1,25 @@
-export const PIECES = {
+export interface PieceColor {
+  red: number,
+  green: number,
+  blue: number,
+  alpha: number
+}
+
+export interface PieceTemplate {
+  color: PieceColor,
+  borderColor: PieceColor,
+  frames: string[],
+  size: number;
+}
+
+const WHITE = {
+  red: 255, green: 255, blue: 255, alpha: 1
+}
+
+export const PIECES: { [key: string]: PieceTemplate } = {
   T: {
-    color: 'orange',
+    color: { red: 255, green: 165, blue: 0, alpha: 1 },
+    borderColor: WHITE,
     size: 3,
     frames: [
       '   ' +
@@ -21,7 +40,8 @@ export const PIECES = {
     ]
   },
   L: {
-    color: 'red',
+    color: { red: 255, green: 0, blue: 0, alpha: 1 },
+    borderColor: WHITE,
     size: 3,
     frames: [
       ' X ' +
@@ -42,7 +62,8 @@ export const PIECES = {
     ]
   },
   J: {
-    color: 'blue',
+    color: { red: 0, green: 0, blue: 255, alpha: 1 },
+    borderColor: WHITE,
     size: 3,
     frames: [
       ' X ' +
@@ -63,7 +84,8 @@ export const PIECES = {
     ]
   },
   I: {
-    color: 'green',
+    color: { red: 0, green: 255, blue: 0, alpha: 1 },
+    borderColor: WHITE,
     size: 4,
     frames: [
       '  X ' +
@@ -88,7 +110,8 @@ export const PIECES = {
     ]
   },
   O: {
-    color: 'gray',
+    color: { red: 80, green: 80, blue: 80, alpha: 1 },
+    borderColor: WHITE,
     size: 2,
     frames: [
       'XX' +
@@ -96,7 +119,8 @@ export const PIECES = {
     ]
   },
   S: {
-    color: 'purple',
+    color: { red: 80, green: 0, blue: 80, alpha: 1 },
+    borderColor: WHITE,
     size: 3,
     frames: [
       '   ' +
@@ -114,10 +138,11 @@ export const PIECES = {
       '  X' +
       ' XX' +
       ' X ',
-    ]
+    ],
   },
   Z: {
-    color: 'yellow',
+    color: { red: 255, green: 255, blue: 0, alpha: 1 },
+    borderColor: WHITE,
     size: 3,
     frames: [
       '   ' +
