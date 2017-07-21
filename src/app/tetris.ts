@@ -1,8 +1,10 @@
-import { PIECE_TEMPLATES, PIECE_THEMES, PieceType, Color, PieceStyle, PieceTemplate } from './pieces';
+import { PIECES, PieceType, PieceTemplate } from './pieces';
+import { THEMES, PieceStyle } from './theme';
 import { KEY_CODES } from './key-codes';
 import { getCanvas } from './canvas';
 import { BLOCK_SIZE, LINE_WIDTH, LINE_WIDTH_HALF, BLOCKS_WIDE, BLOCKS_HIGH } from './dimensions';
 import { initMusic } from './audio';
+import { buildBoard, drawBoard } from './board';
 
 interface Location {
   x?: number;
@@ -16,44 +18,6 @@ const canvas = getCanvas();
 const context = canvas.getContext('2d');
 const music = initMusic();
 music.playbackRate = 1;
-
-function toRGB(color: Color) {
-  return `rgba(${color.red},${color.green},${color.blue},${color.alpha})`;
-}
-
-function drawPiece(piece: Piece) {
-  const frames = piece.frames;
-  const frame = frames[piece.rotation % frames.length];
-  const size = frame.length;
-
-  const px = piece.x;
-  const py = piece.y;
-
-  context.fillStyle = toRGB(piece.color);
-  context.strokeStyle = toRGB(piece.borderColor);
-  context.lineWidth = LINE_WIDTH;
-
-  for (let x = 0; x < size; x++) {
-    for (let y = 0; y < size; y++) {
-      const filled = frame[x][y];
-      if (filled) {
-        const resX = (px + x) * BLOCK_SIZE;
-        const resY = (py + y) * BLOCK_SIZE;
-        context.fillRect(
-          resX + .5,
-          resY + .5,
-          BLOCK_SIZE - 1,
-          BLOCK_SIZE - 1);
-        context.strokeRect(
-          resX + LINE_WIDTH_HALF + .5,
-          resY + LINE_WIDTH_HALF + .5,
-          BLOCK_SIZE - LINE_WIDTH - 1,
-          BLOCK_SIZE - LINE_WIDTH - 1
-        );
-      }
-    }
-  }
-}
 
 function changePiece(piece: Piece, location: Location) {
   if (location.x !== undefined) {
@@ -73,8 +37,8 @@ function clearScreen() {
 }
 
 function getPiece(shape: PieceType) {
-  let tpl = PIECE_TEMPLATES[shape];
-  let style = PIECE_THEMES.STANDARD[shape];
+  let tpl = PIECES[shape];
+  let style = THEMES.STANDARD[shape];
   let piece: Partial<Piece> = {};
   piece.x = 0;
   piece.y = 0;
@@ -109,12 +73,11 @@ function onKeyPress(piece: Piece, key: number) {
 
 let piece = getPiece('T');
 let paused = false;
+let board = buildBoard(BLOCKS_WIDE, BLOCKS_HIGH);
 
 function drawScreen() {
   clearScreen();
-  drawPiece(piece);
-  piece.color.alpha = (piece.color.alpha + .001) % 1;
-  piece.borderColor.alpha = (piece.borderColor.alpha + .001) % 1;
+  drawBoard(context, board);
   window.requestAnimationFrame(drawScreen);
 }
 

@@ -1,4 +1,4 @@
-import { PIECE_TEMPLATES } from './pieces.js';
+import { PIECES } from './pieces';
 
 export const KEY_CODES: { [key: string]: any } = {
   SPACE: 32,
@@ -8,6 +8,6 @@ export const KEY_CODES: { [key: string]: any } = {
   DOWN: 40,
   ENTER: 13
 }
-for (let key of Object.keys(PIECE_TEMPLATES)) {
+for (let key of Object.keys(PIECES)) {
   KEY_CODES[key.charCodeAt(0)] = key;
 }
