@@ -31,32 +31,62 @@ export class Tetris {
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  drawPiece(piece: Piece, add = true) {
-    const frame = piece.frames[piece.rotation % piece.frames.length];
+  drawPiece(piece: Piece, action: 'test'): boolean;
+  drawPiece(piece: Piece, action: 'set' | 'clear'): void;
+  drawPiece(piece: Piece, action: 'set' | 'clear' | 'test'): void | boolean {
+    const frame = piece.template.frames[piece.location.rotation % piece.template.frames.length];
     const size = frame.length;
-    for (let x = 0; x < size; x++) {
-      for (let y = 0; y < size; y++) {
-        if (frame[x][y]) {
-          this.board[y][x] = add ? piece : null;
+    const px = piece.location.x;
+    const py = piece.location.y;
+
+
+    if (action !== 'test') {
+      const add = action === 'set';
+      for (let x = 0; x < size; x++) {
+        for (let y = 0; y < size; y++) {
+          if (frame[x][y]) {
+            this.board[py + y][px + x] = add ? piece.style : null;
+          }
         }
       }
+    } else {
+      for (let x = 0; x < size; x++) {
+        for (let y = 0; y < size; y++) {
+          if (frame[x][y]) {
+            const bx = x + px;
+            const by = y + py;
+            if (bx < 0 || py < 0 || bx >= BLOCKS_WIDE || by >= BLOCKS_HIGH || this.board[by][bx] !== null) {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
     }
   }
 
   movePiece(location: Location) {
-    this.drawPiece(this.piece, false);
+    this.drawPiece(this.piece, 'clear');
+
+    let ploc = this.piece.location;
+    let loc = Object.assign({}, ploc);
+
 
     if (location.x !== undefined) {
-      this.piece.x += location.x;
+      ploc.x += location.x;
     }
     if (location.y !== undefined) {
-      this.piece.y += location.y;
+      ploc.y += location.y;
     }
     if (location.rotation !== undefined) {
-      this.piece.rotation += location.rotation;
+      ploc.rotation += location.rotation;
     }
 
-    this.drawPiece(this.piece, true);
+    if (!this.drawPiece(this.piece, 'test')) {
+      this.piece.location = loc;
+    }
+
+    this.drawPiece(this.piece, 'set');
   }
 
   onKeyPress(e: KeyboardEvent) {
