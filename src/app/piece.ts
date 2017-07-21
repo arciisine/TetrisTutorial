@@ -10,7 +10,7 @@ interface Location {
 
 export interface Piece extends PieceTemplate, PieceStyle, Location { }
 
-export function changePiece(piece: Piece, location: Location) {
+export function movePiece(board: Board, piece: Piece, location: Location) {
   if (location.x !== undefined) {
     piece.x += location.x;
   }
@@ -22,11 +22,10 @@ export function changePiece(piece: Piece, location: Location) {
   }
 }
 
-export function drawPiece(context: CanvasRenderingContext2D, board: Board, piece: Piece) {
+export function getPiece(shape?: PieceType) {
+  if (!shape) {
 
-}
-
-export function getPiece(shape: PieceType) {
+  }
   let tpl = PIECES[shape];
   let style = THEMES.STANDARD[shape];
   let piece: Partial<Piece> = {};

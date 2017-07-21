@@ -2,8 +2,6 @@ export interface PieceTemplate {
   frames: boolean[][][];
 }
 
-export type PieceType = 'T' | 'J' | 'L' | 'S' | 'Z' | 'I' | 'O';
-
 function toMatrix(frame: string[]) {
   return frame.map(x => {
     return x.split('').map(x => x !== ' ');
@@ -167,4 +165,11 @@ export const PIECES = {
       ]
     ].map(toMatrix)
   }
+}
+
+export type PieceType = keyof (typeof PIECES);
+const SHAPES = Object.keys(PIECES) as PieceType[]
+
+export function getRandomShape() {
+  return SHAPES[parseInt(`${SHAPES.length * Math.random()}`, 10)]
 }
