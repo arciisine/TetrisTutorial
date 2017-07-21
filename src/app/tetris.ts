@@ -12,6 +12,7 @@ export class Tetris {
   readonly context = this.canvas.getContext('2d');
   readonly music = initMusic();
 
+  musicEnabled = false;
   piece = getPiece();
   paused = false;
   board = buildBoard(BLOCKS_WIDE, BLOCKS_HIGH);
@@ -23,12 +24,18 @@ export class Tetris {
     this.music.playbackRate = 1;
     document.addEventListener('keydown', this.onKeyPress);
     window.requestAnimationFrame(this.drawScreen);
-    //music.play();
+    if (this.musicEnabled) {
+      this.music.play();
+    }
   }
 
   clearScreen() {
     this.context.fillStyle = '#000';
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  nextPiece() {
+    this.piece = getPiece();
   }
 
   drawPiece(piece: Piece, action: 'test'): boolean;
@@ -68,8 +75,8 @@ export class Tetris {
   movePiece(location: Location) {
     this.drawPiece(this.piece, 'clear');
 
-    let ploc = this.piece.location;
-    let loc = Object.assign({}, ploc);
+    const ploc = this.piece.location;
+    const loc = Object.assign({}, ploc);
 
 
     if (location.x !== undefined) {
@@ -84,9 +91,11 @@ export class Tetris {
 
     if (!this.drawPiece(this.piece, 'test')) {
       this.piece.location = loc;
+      return false;
     }
 
     this.drawPiece(this.piece, 'set');
+    return true;
   }
 
   onKeyPress(e: KeyboardEvent) {
@@ -97,12 +106,22 @@ export class Tetris {
       case KEY_CODES.UP: this.movePiece({ y: -1 }); break;
       case KEY_CODES.DOWN: this.movePiece({ y: 1 }); break;
       case KEY_CODES.SPACE: this.movePiece({ rotation: 1 }); break;
+      case KEY_CODES.M:
+        this.musicEnabled = !this.musicEnabled
+        if (this.musicEnabled) {
+          this.music.play();
+        } else {
+          this.music.pause();
+        }
+        break;
       case KEY_CODES.ENTER:
         this.paused = !this.paused;
-        if (this.paused) {
-          this.music.pause();
-        } else {
-          this.music.play();
+        if (this.musicEnabled) {
+          if (this.paused) {
+            this.music.pause();
+          } else {
+            this.music.play();
+          }
         }
         break;
     }

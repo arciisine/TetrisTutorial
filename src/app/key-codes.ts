@@ -4,6 +4,7 @@ export const KEY_CODES = {
   SPACE: 32,
   LEFT: 37,
   UP: 38,
+  M: 77,
   RIGHT: 39,
   DOWN: 40,
   ENTER: 13
