@@ -1,5 +1,5 @@
 import { PieceStyle, THEMES } from "./theme";
-import { PieceTemplate, PieceType, PIECES } from "./piece-templates";
+import { PieceTemplate, PieceType, PIECES, getRandomShape } from "./piece-templates";
 import { Board } from "./board";
 
 interface Location {
@@ -24,7 +24,7 @@ export function movePiece(board: Board, piece: Piece, location: Location) {
 
 export function getPiece(shape?: PieceType) {
   if (!shape) {
-
+    shape = getRandomShape();
   }
   let tpl = PIECES[shape];
   let style = THEMES.STANDARD[shape];

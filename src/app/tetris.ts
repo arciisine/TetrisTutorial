@@ -36,7 +36,7 @@ function onKeyPress(e: KeyboardEvent) {
   }
 }
 
-let piece = getPiece('T');
+let piece = getPiece();
 let paused = false;
 let board = buildBoard(BLOCKS_WIDE, BLOCKS_HIGH);
 
