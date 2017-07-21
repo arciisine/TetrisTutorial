@@ -13,11 +13,10 @@ export class Tetris {
   readonly music = initMusic();
 
   musicEnabled = false;
-  piece = getPiece();
+  piece: Piece;
   paused = false;
   board = buildBoard(BLOCKS_WIDE, BLOCKS_HIGH);
   lastGravity: number = Date.now();
-  boardFilled: number[] = this.board.map(x => 0);
 
   constructor() {
     this.onKeyPress = this.onKeyPress.bind(this)
@@ -29,6 +28,7 @@ export class Tetris {
     if (this.musicEnabled) {
       this.music.play();
     }
+    this.getNextPiece();
   }
 
   clearScreen() {
@@ -39,60 +39,73 @@ export class Tetris {
   finishPiece() {
     let removed = 0;
     for (let i = BLOCKS_HIGH - 1; i >= 0; i--) {
-      if (this.boardFilled[i] === BLOCKS_WIDE) {
-        this.boardFilled.splice(i, 1);
+      let c = 0;
+      for (let n of this.board[i]) {
+        if (n !== null) {
+          c++;
+        }
+      }
+      if (c === BLOCKS_WIDE) {
         this.board.splice(i, 1);
         removed += 1;
       }
     }
     for (let i = 0; i < removed; i++) {
-      this.boardFilled.unshift(0);
       this.board.unshift(this.board[0].map(x => null));
     }
+    this.getNextPiece();
+  }
+
+  getNextPiece() {
     this.piece = getPiece();
-    if (!this.drawPiece(this.piece, 'test')) {
+    if (!this.testPiece()) {
       //Game over
       document.write('GAME OVER');
+    } else {
+      while (this.movePiece({ y: -1 })) { }
+      while (this.movePiece({ x: -1 })) { }
+      this.movePiece({ x: 3 });
+      this.lastGravity = Date.now();
     }
   }
 
-  drawPiece(piece: Piece, action: 'test'): boolean;
-  drawPiece(piece: Piece, action: 'set' | 'clear'): void;
-  drawPiece(piece: Piece, action: 'set' | 'clear' | 'test'): void | boolean {
-    const frame = piece.template.frames[Math.abs(piece.location.rotation % piece.template.frames.length)];
+  drawPiece(action: 'set' | 'clear') {
+    const frame = this.piece.template.frames[Math.abs(this.piece.location.rotation % this.piece.template.frames.length)];
     const size = frame.length;
-    const px = piece.location.x;
-    const py = piece.location.y;
-
-
-    if (action !== 'test') {
-      const add = action === 'set';
-      for (let x = 0; x < size; x++) {
-        for (let y = 0; y < size; y++) {
-          if (frame[x][y]) {
-            this.board[py + y][px + x] = add ? piece.style : null;
-            this.boardFilled[py + y] += add ? 1 : -1;
-          }
+    const px = this.piece.location.x;
+    const py = this.piece.location.y;
+    const add = action === 'set';
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        if (frame[x][y]) {
+          this.board[py + y][px + x] = add ? this.piece.style : null;
         }
       }
-    } else {
-      for (let x = 0; x < size; x++) {
-        for (let y = 0; y < size; y++) {
-          if (frame[x][y]) {
-            const bx = x + px;
-            const by = y + py;
-            if (bx < 0 || py < 0 || bx >= BLOCKS_WIDE || by >= BLOCKS_HIGH || this.board[by][bx] !== null) {
-              return false;
-            }
-          }
-        }
-      }
-      return true;
     }
+  }
+
+  testPiece() {
+    const frame = this.piece.template.frames[Math.abs(this.piece.location.rotation % this.piece.template.frames.length)];
+    const size = frame.length;
+    const px = this.piece.location.x;
+    const py = this.piece.location.y;
+
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        if (frame[x][y]) {
+          const bx = x + px;
+          const by = y + py;
+          if (bx < 0 || py < 0 || bx >= BLOCKS_WIDE || by >= BLOCKS_HIGH || this.board[by][bx] !== null) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 
   movePiece(location: Location) {
-    this.drawPiece(this.piece, 'clear');
+    this.drawPiece('clear');
 
     const ploc = this.piece.location;
     const loc = Object.assign({}, ploc);
@@ -109,52 +122,67 @@ export class Tetris {
       ploc.rotation += location.rotation;
     }
 
-    if (!this.drawPiece(this.piece, 'test')) {
+    if (!this.testPiece()) {
       this.piece.location = loc;
     } else {
       moved = true;
     }
 
-    this.drawPiece(this.piece, 'set');
+    this.drawPiece('set');
+
+    if (location.y === 1 && !moved) { // If we didn't move down for some reason 
+      this.finishPiece();
+    }
+
     return moved;
   }
 
   onKeyPress(e: KeyboardEvent) {
     let key = e.keyCode;
-    switch (key) {
-      case KEY_CODES.LEFT: this.movePiece({ x: -1 }); break;
-      case KEY_CODES.RIGHT: this.movePiece({ x: 1 }); break;
-      case KEY_CODES.DOWN: this.movePiece({ y: 1 }); break;
-      case KEY_CODES.UP: this.movePiece({ rotation: -1 }); break;
-      case KEY_CODES.SPACE: this.movePiece({ rotation: 1 }); break;
-      case KEY_CODES.M:
-        this.musicEnabled = !this.musicEnabled
-        if (this.musicEnabled) {
-          this.music.play();
-        } else {
-          this.music.pause();
-        }
-        break;
-      case KEY_CODES.ENTER:
-        this.paused = !this.paused;
-        if (this.musicEnabled) {
-          if (this.paused) {
-            this.music.pause();
-          } else {
+    let moved = false;
+    if (!this.paused) {
+      moved = true;
+      switch (key) {
+        case KEY_CODES.LEFT: this.movePiece({ x: -1 }); break;
+        case KEY_CODES.RIGHT: this.movePiece({ x: 1 }); break;
+        case KEY_CODES.DOWN: this.movePiece({ y: 1 }); break;
+        case KEY_CODES.UP: this.movePiece({ rotation: -1 }); break;
+        case KEY_CODES.SPACE: this.movePiece({ rotation: 1 }); break;
+        default:
+          moved = false;
+      }
+    }
+    if (!moved) {
+      switch (key) {
+        case KEY_CODES.M:
+          this.musicEnabled = !this.musicEnabled
+          if (this.musicEnabled) {
             this.music.play();
+          } else {
+            this.music.pause();
           }
-        }
-        break;
+          break;
+        case KEY_CODES.ENTER:
+          this.paused = !this.paused;
+          if (this.musicEnabled) {
+            if (this.paused) {
+              this.music.pause();
+            } else {
+              this.music.play();
+            }
+          }
+          break;
+      }
     }
   }
 
   drawScreen() {
     this.clearScreen();
-    if ((Date.now() - this.lastGravity) > 1000) {
-      if (!this.movePiece({ y: 1 })) {
-        this.finishPiece();
+    if (!this.paused) {
+      if ((Date.now() - this.lastGravity) > 1000) {
+        this.movePiece({ y: 1 });
+        this.lastGravity = Date.now();
       }
-      this.lastGravity = Date.now();
     }
     drawBoard(this.context, this.board);
     window.requestAnimationFrame(this.drawScreen);
