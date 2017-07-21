@@ -1,5 +1,7 @@
+export type PieceTemplateFrame = boolean[][];
+
 export interface PieceTemplate {
-  frames: boolean[][][];
+  frames: PieceTemplateFrame[];
 }
 
 function toMatrix(frame: string[]) {

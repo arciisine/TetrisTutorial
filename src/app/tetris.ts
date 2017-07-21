@@ -1,58 +1,86 @@
-import { PIECES, PieceType, PieceTemplate } from './piece-templates';
-import { THEMES, PieceStyle } from './theme';
 import { KEY_CODES } from './key-codes';
 import { getCanvas } from './canvas';
-import { BLOCK_SIZE, LINE_WIDTH, LINE_WIDTH_HALF, BLOCKS_WIDE, BLOCKS_HIGH } from './dimensions';
+import { BLOCKS_WIDE, BLOCKS_HIGH } from './dimensions';
 import { initMusic } from './audio';
-import { buildBoard, drawBoard } from './board';
-import { getPiece, Piece, movePiece } from "./piece";
+import { buildBoard, drawBoard, Board } from './board';
+import { getPiece, Piece, Location } from './piece';
+import { PieceTemplate, PieceTemplateFrame } from "./piece-templates";
 
-const canvas = getCanvas();
-const context = canvas.getContext('2d');
-const music = initMusic();
-music.playbackRate = 1;
+export class Tetris {
 
-function clearScreen() {
-  context.fillStyle = '#000';
-  context.fillRect(0, 0, canvas.width, canvas.height);
-}
+  readonly canvas = getCanvas();
+  readonly context = this.canvas.getContext('2d');
+  readonly music = initMusic();
 
-function onKeyPress(e: KeyboardEvent) {
-  let key = e.keyCode;
-  switch (key) {
-    case KEY_CODES.LEFT: movePiece(board, piece, { x: -1 }); break;
-    case KEY_CODES.RIGHT: movePiece(board, piece, { x: 1 }); break;
-    case KEY_CODES.UP: movePiece(board, piece, { y: -1 }); break;
-    case KEY_CODES.DOWN: movePiece(board, piece, { y: 1 }); break;
-    case KEY_CODES.SPACE: movePiece(board, piece, { rotation: 1 }); break;
-    case KEY_CODES.ENTER:
-      paused = !paused;
-      if (paused) {
-        music.pause();
-      } else {
-        music.play();
+  piece = getPiece();
+  paused = false;
+  board = buildBoard(BLOCKS_WIDE, BLOCKS_HIGH);
+
+  constructor() {
+    this.onKeyPress = this.onKeyPress.bind(this)
+    this.drawScreen = this.drawScreen.bind(this);
+
+    this.music.playbackRate = 1;
+    document.addEventListener('keydown', this.onKeyPress);
+    window.requestAnimationFrame(this.drawScreen);
+    //music.play();
+  }
+
+  clearScreen() {
+    this.context.fillStyle = '#000';
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  drawPiece(piece: Piece, add = true) {
+    const frame = piece.frames[piece.rotation % piece.frames.length];
+    const size = frame.length;
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        if (frame[x][y]) {
+          this.board[y][x] = add ? piece : null;
+        }
       }
-      break;
+    }
+  }
+
+  movePiece(location: Location) {
+    this.drawPiece(this.piece, false);
+
+    if (location.x !== undefined) {
+      this.piece.x += location.x;
+    }
+    if (location.y !== undefined) {
+      this.piece.y += location.y;
+    }
+    if (location.rotation !== undefined) {
+      this.piece.rotation += location.rotation;
+    }
+
+    this.drawPiece(this.piece, true);
+  }
+
+  onKeyPress(e: KeyboardEvent) {
+    let key = e.keyCode;
+    switch (key) {
+      case KEY_CODES.LEFT: this.movePiece({ x: -1 }); break;
+      case KEY_CODES.RIGHT: this.movePiece({ x: 1 }); break;
+      case KEY_CODES.UP: this.movePiece({ y: -1 }); break;
+      case KEY_CODES.DOWN: this.movePiece({ y: 1 }); break;
+      case KEY_CODES.SPACE: this.movePiece({ rotation: 1 }); break;
+      case KEY_CODES.ENTER:
+        this.paused = !this.paused;
+        if (this.paused) {
+          this.music.pause();
+        } else {
+          this.music.play();
+        }
+        break;
+    }
+  }
+
+  drawScreen() {
+    this.clearScreen();
+    drawBoard(this.context, this.board);
+    window.requestAnimationFrame(this.drawScreen);
   }
 }
-
-let piece = getPiece();
-let paused = false;
-let board = buildBoard(BLOCKS_WIDE, BLOCKS_HIGH);
-
-function drawScreen() {
-  clearScreen();
-  drawBoard(context, board);
-  window.requestAnimationFrame(drawScreen);
-}
-
-document.body.addEventListener('keydown', onKeyPress);
-
-setInterval(function () {
-  if (!paused) {
-    movePiece(board, piece, { y: 1 })
-  }
-}, 1000);
-
-window.requestAnimationFrame(drawScreen);
-//music.play();

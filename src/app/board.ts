@@ -1,12 +1,7 @@
-import { PieceStyle, toRGB } from './theme';
+import { PieceStyle } from './theme';
 import { BLOCK_SIZE, LINE_WIDTH, LINE_WIDTH_HALF } from "./dimensions";
 
-interface PieceStyleCache {
-  colorString?: string;
-  borderColorString?: string;
-}
-
-export type Board = (PieceStyle & PieceStyleCache)[][];
+export type Board = PieceStyle[][];
 
 export function buildBoard(w: number, h: number) {
   let board: Board = [];
@@ -29,18 +24,12 @@ export function drawBoard(context: CanvasRenderingContext2D, board: Board) {
 
   for (let y = 0; y < h; y += 1) {
     const row = board[y];
-    for (let x = 0; y < w; x++) {
+    for (let x = 0; x < w; x++) {
       const block = row[x];
       const filled = block !== null;
       if (filled) {
-        if (!block.colorString) {
-          block.colorString = toRGB(block.color);
-        }
-        if (!block.borderColorString) {
-          block.borderColorString = toRGB(block.borderColor);
-        }
-        context.fillStyle = block.colorString;
-        context.strokeStyle = block.borderColorString;
+        context.fillStyle = block.color.toString();
+        context.strokeStyle = block.borderColor.toString();
 
         const resX = x * BLOCK_SIZE;
         const resY = y * BLOCK_SIZE;

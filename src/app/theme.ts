@@ -1,50 +1,100 @@
-export function toRGB(color: Color) {
-  return `rgba(${color.red},${color.green},${color.blue},${color.alpha})`;
+export class Color {
+  private _red: number;
+  private _green: number;
+  private _blue: number;
+  private _alpha: number;
+  private _rgba: string;
+
+  constructor(r: number, g: number, b: number, a = 1) {
+    this._red = r;
+    this._green = g;
+    this._blue = b;
+    this._alpha = a;
+  }
+
+  set red(v: number) {
+    this._red = v;
+    this._rgba = null;
+  }
+
+  get red() {
+    return this._red;
+  }
+
+  set blue(v: number) {
+    this._blue = v;
+    this._rgba = null;
+  }
+
+  get blue() {
+    return this._blue;
+  }
+
+  set green(v: number) {
+    this._green = v;
+    this._rgba = null;
+  }
+
+  get green() {
+    return this._green;
+  }
+
+  set alpha(v: number) {
+    this._alpha = v;
+    this._rgba = null;
+  }
+
+  get alpha() {
+    return this._alpha;
+  }
+
+  toString() {
+    if (!this._rgba) {
+      this._rgba = `rgba(${this.red},${this.green},${this.blue},${this.alpha})`;
+    }
+    return this._rgba;
+  }
+
+  clone() {
+    return new Color(this._red, this._green, this._blue, this._alpha);
+  }
 }
 
-export interface Color {
-  red: number,
-  green: number,
-  blue: number,
-  alpha: number
-}
 export interface PieceStyle {
   color: Color;
   borderColor: Color;
 }
 
-const WHITE = {
-  red: 255, green: 255, blue: 255, alpha: 1
-}
+const WHITE = new Color(255, 255, 255)
 
 export const THEMES = {
   STANDARD: {
     T: {
-      color: { red: 255, green: 165, blue: 0, alpha: 1 },
+      color: new Color(255, 165, 0),
       borderColor: WHITE,
     },
     L: {
-      color: { red: 255, green: 0, blue: 0, alpha: 1 },
+      color: new Color(255, 0, 0),
       borderColor: WHITE,
     },
     J: {
-      color: { red: 0, green: 0, blue: 255, alpha: 1 },
+      color: new Color(0, 0, 255),
       borderColor: WHITE,
     },
     I: {
-      color: { red: 0, green: 255, blue: 0, alpha: 1 },
+      color: new Color(0, 255, 0),
       borderColor: WHITE,
     },
     O: {
-      color: { red: 80, green: 80, blue: 80, alpha: 1 },
+      color: new Color(80, 80, 80),
       borderColor: WHITE,
     },
     S: {
-      color: { red: 80, green: 0, blue: 80, alpha: 1 },
+      color: new Color(80, 0, 80),
       borderColor: WHITE,
     },
     Z: {
-      color: { red: 255, green: 255, blue: 0, alpha: 1 },
+      color: new Color(255, 255, 0),
       borderColor: WHITE,
     }
   }
