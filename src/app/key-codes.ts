@@ -1,4 +1,4 @@
-import { PIECES } from './pieces';
+import { PIECES } from './piece-templates';
 
 export const KEY_CODES: { [key: string]: any } = {
   SPACE: 32,

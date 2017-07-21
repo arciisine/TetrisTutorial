@@ -1,55 +1,23 @@
-import { PIECES, PieceType, PieceTemplate } from './pieces';
+import { PIECES, PieceType, PieceTemplate } from './piece-templates';
 import { THEMES, PieceStyle } from './theme';
 import { KEY_CODES } from './key-codes';
 import { getCanvas } from './canvas';
 import { BLOCK_SIZE, LINE_WIDTH, LINE_WIDTH_HALF, BLOCKS_WIDE, BLOCKS_HIGH } from './dimensions';
 import { initMusic } from './audio';
 import { buildBoard, drawBoard } from './board';
-
-interface Location {
-  x?: number;
-  y?: number;
-  rotation?: number;
-}
-
-interface Piece extends PieceTemplate, PieceStyle, Location { }
+import { getPiece, Piece, changePiece, drawPiece } from "./piece";
 
 const canvas = getCanvas();
 const context = canvas.getContext('2d');
 const music = initMusic();
 music.playbackRate = 1;
 
-function changePiece(piece: Piece, location: Location) {
-  if (location.x !== undefined) {
-    piece.x += location.x;
-  }
-  if (location.y !== undefined) {
-    piece.y += location.y;
-  }
-  if (location.rotation !== undefined) {
-    piece.rotation += location.rotation;
-  }
-}
-
 function clearScreen() {
   context.fillStyle = '#000';
   context.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function getPiece(shape: PieceType) {
-  let tpl = PIECES[shape];
-  let style = THEMES.STANDARD[shape];
-  let piece: Partial<Piece> = {};
-  piece.x = 0;
-  piece.y = 0;
-  piece.rotation = 0;
-  piece.frames = tpl.frames;
-  piece.color = { ...style.color };
-  piece.borderColor = { ...style.borderColor };
-  return piece as Piece;
-}
-
-function onKeyPress(piece: Piece, key: number) {
+function onKeyPress(key: number) {
   switch (key) {
     case KEY_CODES.LEFT: changePiece(piece, { x: -1 }); break;
     case KEY_CODES.RIGHT: changePiece(piece, { x: 1 }); break;
@@ -78,11 +46,12 @@ let board = buildBoard(BLOCKS_WIDE, BLOCKS_HIGH);
 function drawScreen() {
   clearScreen();
   drawBoard(context, board);
+  drawPiece(context, board, piece);
   window.requestAnimationFrame(drawScreen);
 }
 
 document.body.addEventListener('keydown', function (e: KeyboardEvent) {
-  onKeyPress(piece, e.keyCode);
+  onKeyPress(e.keyCode);
 })
 
 setInterval(function () {
